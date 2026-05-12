@@ -415,10 +415,15 @@ function prepare_partitions() {
 		check_loop_device "${LOOP}p${uefipart}"
 		run_host_command_logged mkfs.fat -F32 -n "${UEFI_FS_LABEL^^}" ${LOOP}p${uefipart} 2>&1 # "^^" makes variable UPPERCASE, required for FAT32.
 		mkdir -p "${MOUNT}${UEFI_MOUNT_POINT}"
-		# Fall back to fusefat when the host kernel lacks vfat module support
-		if ! mount ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}" 2>/dev/null; then
-			display_alert "vfat mount failed, falling back to fusefat" "EFI partition" "wrn"
-			run_host_command_logged fusefat -o rw+ ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}"
+		# Fall back when host kernel lacks vfat support: bind-mount a tmpdir so tools
+		# like grub-install see a real directory; mcopy populates the FAT partition later
+		# via a post_umount_final_image hook (see ARMBIAN_EFI_TMPDIR / ARMBIAN_EFI_LOOP_PART).
+		if ! mount "${LOOP}p${uefipart}" "${MOUNT}${UEFI_MOUNT_POINT}" 2>/dev/null; then
+			display_alert "vfat mount unavailable, using tmpdir for EFI" "mcopy will populate FAT after image creation" "wrn"
+			declare -g ARMBIAN_EFI_TMPDIR
+			ARMBIAN_EFI_TMPDIR="$(mktemp -d /tmp/armbian-efi-XXXXXX)"
+			declare -g ARMBIAN_EFI_LOOP_PART="${LOOP}p${uefipart}"
+			run_host_command_logged mount --bind "${ARMBIAN_EFI_TMPDIR}" "${MOUNT}${UEFI_MOUNT_POINT}"
 		fi
 
 		# Allow skipping the fstab entry for the EFI partition if UEFI_MOUNT_POINT_SKIP_FSTAB=yes; add comments instead if so
