@@ -162,7 +162,7 @@ pre_umount_final_image__install_grub() {
 		}
 	fi
 
-	local install_grub_cmdline="grub-install --target=${UEFI_GRUB_TARGET} --efi-directory=${UEFI_MOUNT_POINT} --no-nvram --removable" # nvram is global to the host, even across chroot. take care.
+	local install_grub_cmdline="grub-install --target=${UEFI_GRUB_TARGET} --efi-directory=${UEFI_MOUNT_POINT} --no-nvram --removable ${UEFI_GRUB_EXTRA_INSTALL_PARAMS:-}" # nvram is global to the host, even across chroot. take care.
 	display_alert "Extension: ${EXTENSION}: Installing GRUB EFI..." "${UEFI_GRUB_TARGET}" ""
 	chroot_custom "$chroot_target" "$install_grub_cmdline" || {
 		exit_with_error "${install_grub_cmdline} failed!"
