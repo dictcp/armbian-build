@@ -415,7 +415,11 @@ function prepare_partitions() {
 		check_loop_device "${LOOP}p${uefipart}"
 		run_host_command_logged mkfs.fat -F32 -n "${UEFI_FS_LABEL^^}" ${LOOP}p${uefipart} 2>&1 # "^^" makes variable UPPERCASE, required for FAT32.
 		mkdir -p "${MOUNT}${UEFI_MOUNT_POINT}"
-		run_host_command_logged mount ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}"
+		# Fall back to fusefat when the host kernel lacks vfat module support
+		if ! mount ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}" 2>/dev/null; then
+			display_alert "vfat mount failed, falling back to fusefat" "EFI partition" "wrn"
+			run_host_command_logged fusefat ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}"
+		fi
 
 		# Allow skipping the fstab entry for the EFI partition if UEFI_MOUNT_POINT_SKIP_FSTAB=yes; add comments instead if so
 		if [[ "${UEFI_MOUNT_POINT_SKIP_FSTAB:-"no"}" == "yes" ]]; then
