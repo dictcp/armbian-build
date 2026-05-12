@@ -418,7 +418,7 @@ function prepare_partitions() {
 		# Fall back to fusefat when the host kernel lacks vfat module support
 		if ! mount ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}" 2>/dev/null; then
 			display_alert "vfat mount failed, falling back to fusefat" "EFI partition" "wrn"
-			run_host_command_logged fusefat ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}"
+			run_host_command_logged fusefat -o rw+ ${LOOP}p${uefipart} "${MOUNT}${UEFI_MOUNT_POINT}"
 		fi
 
 		# Allow skipping the fstab entry for the EFI partition if UEFI_MOUNT_POINT_SKIP_FSTAB=yes; add comments instead if so
