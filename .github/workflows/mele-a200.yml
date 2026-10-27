@@ -11,16 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7.0.1
 
       - name: Checkout armbian/build
         run: |
-          git clone --depth=1 --branch=v23.11.2 https://github.com/armbian/build 
+          git clone --depth=1 --branch=v26.5.1 https://github.com/armbian/build
 
       - name: Patch Mele A200
-        run: |          
+        run: |
           cat <<EOF > ./build/config/boards/mele-a200.conf
           BOARD_NAME="Mele A200"
+          BOARD_VENDOR="allwinner"
           BOARDFAMILY="sun5i"
           BOARD_MAINTAINER=""
           HAS_VIDEO_OUTPUT="yes"
@@ -31,9 +32,9 @@ jobs:
       - name: Build for mele-a200
         run: |
           cd build
-          ./compile.sh build BOARD=mele-a200 BRANCH=current BUILD_MINIMAL=yes KERNEL_CONFIGURE=no RELEASE=jammy FORCE_CHECK_MD5_PACKAGES=no
+          ./compile.sh build BOARD=mele-a200 BRANCH=current BUILD_MINIMAL=yes KERNEL_CONFIGURE=no RELEASE=trixie FORCE_CHECK_MD5_PACKAGES=no
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: built-images
           path: build/output/images
