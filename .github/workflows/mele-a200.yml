@@ -15,12 +15,13 @@ jobs:
 
       - name: Checkout armbian/build
         run: |
-          git clone --depth=1 --branch=v23.11.2 https://github.com/armbian/build 
+          git clone --depth=1 --branch=v26.5.1 https://github.com/armbian/build
 
       - name: Patch Mele A200
-        run: |          
+        run: |
           cat <<EOF > ./build/config/boards/mele-a200.conf
           BOARD_NAME="Mele A200"
+          BOARD_VENDOR="allwinner"
           BOARDFAMILY="sun5i"
           BOARD_MAINTAINER=""
           HAS_VIDEO_OUTPUT="yes"
